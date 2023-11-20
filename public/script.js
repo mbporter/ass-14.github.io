@@ -1,173 +1,100 @@
-const getAnimals = async () => {
-    try{
-        return (await fetch("/api/animals")).json();
-    }catch(error){
-        console.log(error);
+document.addEventListener('DOMContentLoaded', () => {
+    loadAlbums();
+    document.getElementById('add-album-button').addEventListener('click', () => toggleAlbumForm());
+    document.getElementById('album-form').addEventListener('submit', handleFormSubmit);
+});
+
+let currentEditingId = null; // Track the id of the album being edited
+
+async function loadAlbums() {
+    try {
+        const response = await fetch('/api/albums');
+        const albums = await response.json();
+        displayAlbums(albums);
+    } catch (error) {
+        console.error('Error loading albums:', error);
     }
-};
+}
 
-const showAnimals = async () => {
-    let animals = await getAnimals();
-    let animalsDiv = document.getElementById("animals-list");
-    animals.forEach((animal) => {
-        const section = document.createElement("section");
-        animalsDiv.append(section);
-
-        const a = document.createElement("a");
-        a.href = "#"
-        section.append(a);
-
-        h3 = document.createElement("h3");
-        h3.innerHTML = animal.name;
-        a.append(h3);
-
-        a.onclick = (e) => {
-            e.preventDefault();
-            displayAnimals(animal);
-        };
+function displayAlbums(albums) {
+    const albumList = document.getElementById('album-list');
+    albumList.innerHTML = '';
+    albums.forEach(album => {
+        const albumElement = document.createElement('section');
+        albumElement.classList.add('album');
+        let songsList = album.songs.map(song => `<li>${song}</li>`).join('');
+        albumElement.innerHTML = `
+            <h3>${album.name}</h3>
+            <p><strong>Artist:</strong> ${album.artist}</p>
+            <p><strong>Release Year:</strong> ${album.releaseYear}</p>
+            <p><strong>Genre:</strong> ${album.genre}</p>
+            <p><strong>Description:</strong> ${album.description}</p>
+            <ul>${songsList}</ul>
+            <button onclick="editAlbum(${album._id})">Edit</button>
+            <button onclick="deleteAlbum(${album._id})">Delete</button>
+        `;
+        albumList.appendChild(albumElement);
     });
-};
+}
 
-const displayAnimals = (animal) => {
-    const animalsInfo = document.getElementById("animals-info");
-    animalsInfo.innerHTML = " ";
+function toggleAlbumForm(edit = false) {
+    const formContainer = document.getElementById('album-form-container');
+    formContainer.classList.toggle('hidden');
+    if (!edit) {
+        currentEditingId = null; 
+        document.getElementById('album-form').reset();
+    }
+}
 
-    const color = document.createElement("p");
-    color.innerHTML = `<strong>Color: </strong> ${animal.color}`;
-    animalsInfo.append(color);
-
-    const family = document.createElement("p");
-    family.innerHTML = `<strong>Family: </strong> ${animal.family}`;
-    animalsInfo.append(family);
-
-    const place = document.createElement("p");
-    place.innerHTML = `<strong>Place: </strong> ${animal.place}`;
-    animalsInfo.append(place);
-
-    const growth = document.createElement("p");
-    growth.innerHTML = `<strong>Growth: </strong> ${animal.growth}`;
-    animalsInfo.append(growth);
-
-    const image = document.createElement("img");
-    image.src = animal.image;
-    animalsInfo.append(image);
-
-    const d = document.createElement("ul");
-    animalsInfo.appendChild(d); 
-    aniaml.forEach((item) => { 
-        const li = document.createElement("li");
-        d.appendChild(li);
-        li.innerHTML = item;
-    });
-
-    const deleteLink = document.createElement("a");
-    deleteLink.innerHTML = "&#x2715;";
-    deleteLink.id = "delete"; 
-    aimalsInfo.appendChild(deleteLink);
-
-    const editLink = document.createElement("a");
-    editLink.innerHTML = "&#9998;";
-    editLink.id = "edit"; 
-    animalsInfo.appendChild(editLink);
-
-    deleteLink.onclick = (e) => {
-        e.preventDefault();
-        
+async function handleFormSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const fetchOptions = {
+        method: currentEditingId ? 'PUT' : 'POST',
+        body: formData
     };
 
-    editLink.onclick = (e) => {
-        e.preventDefault();
-        document.querySelector(".dialog").classList.remove("transparent");
-        document.getElementById("title").innerHTML = "Edit Exotic Animal Info";
-    };
-
-    populateEditForm(animal);
-};
-
-const populateEditForm = (animal) => {
-
-};
-
-const addExoticAnimal = async(e) => {
-    e.preventDefault();
-    const form =  document.getElementById("edit-animal");
-    const formData = new FormData(form);
-    const imageInput = form.querySelector("#image");
-    if (imageInput && imageInput.files.length > 0) {
-        formData.append("image", imageInput.files[0]);
+    try {
+        const response = await fetch(`/api/albums${currentEditingId ? '/' + currentEditingId : ''}`, fetchOptions);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        displayAlbums(result);
+        toggleAlbumForm();
+    } catch (error) {
+        console.error('Error submitting form:', error);
     }
+}
 
-    formData.append("animal", getAnimal());
-    formData.append("name", form.name.value);
-    formData.append("color", form.color.value);
-    formData.append("family", form.family.value);
-    formData.append("place", form.place.value);
-    formData.append("growth", form.growth.value);
-    
-
-    let response;
-
-    if(form._id.value == -1){
-        formData.delete("_id");
-        formData.delete("img");
-        
-
-        console.log(...formData);
-
-        response = await fetch("/api/animals", {
-            method: "POST",
-            body: formData
-        });
-
+async function editAlbum(albumId) {
+    const response = await fetch('/api/albums');
+    const albums = await response.json();
+    const albumToEdit = albums.find(album => album._id === albumId);
+    if (albumToEdit) {
+        const form = document.getElementById('album-form');
+        form.name.value = albumToEdit.name;
+        form.artist.value = albumToEdit.artist;
+        form.releaseYear.value = albumToEdit.releaseYear;
+        form.genre.value = albumToEdit.genre;
+        form.description.value = albumToEdit.description;
+        form.songs.value = albumToEdit.songs.join(', ');
+        currentEditingId = albumId;
+        toggleAlbumForm(true);
     }
+}
 
-    if(response.status != 200){
-        console.log("Posting Error");
-        return;
+async function deleteAlbum(albumId) {
+    if (confirm('Are you sure you want to delete this album?')) {
+        try {
+            const response = await fetch(`/api/albums/${albumId}`, { method: 'DELETE' });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+            displayAlbums(result);
+        } catch (error) {
+            console.error('Error deleting album:', error);
+        }
     }
-
-    
-    resetForm();
-    document.querySelector(".dialog").classList.add("transparent");
-    showAnimals();
-};
-
-const getAniamls = () => {
-    const inputs = document.querySelectorAll("#description input");
-    let animals = [];
-
-    inputs.forEach((input) => {
-        animals.push(input.value);
-    });
-
-    return animals;
-};
-
-const resetForm = () => {
-    const form = document.getElementById("edit-animal");
-    form.reset();
-    form._id = "-1";
-    document.getElementById("description").innerHTML = "";
-};
-
-const showHideAdd = (e) => {
-    e.preventDefault();
-    document.querySelector(".dialog").classList.remove("transparent");
-    document.getElementById("title").innerHTML = "Add Animal";
-    resetForm();
-};
-
-
-
-
-window.onload = () => {
-    showAnimals();
-    document.getElementById("edit-animal").onsubmit = addAnimal;
-    document.getElementById("add").onclick = showHideAdd;
-
-    document.querySelector(".close").onclick = () => {
-        document.querySelector(".dialog").classList.add("transparent");
-    };
-
-    
-};
+}

@@ -1,60 +1,50 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link rel="stylesheet" href="styles.css"/>
-        <script src="script.js"></script>
-    </head>
+<html lang="en">
+
+<head>
+    <title>Music Album Collection</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+</head>
+
+<body>
     <header>
-        <h1>Animals</h1>
-        <h2>Add Animal</h2>
-        <a href="#" id="add">+</a>
+        <h1>Music Album Collection</h1>
+        <button id="add-album-button">Add New Album</button>
     </header>
 
-    <div class="columns column">
-        <div id="animals-list"></div>
-        <div id="animals-column">
-            <div id="animals-info"></div>
+    <main>
+        <section id="album-list" class="album-list"></section>
+
+        <div id="album-form-container" class="hidden">
+            <h2 id="form-title">Add New Album</h2> 
+            <form id="album-form" enctype="multipart/form-data">
+                <input type="hidden" name="_id" value="-1">
+                
+                <label for="name">Album Name:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="artist">Artist:</label>
+                <input type="text" id="artist" name="artist" required>
+
+                <label for="releaseYear">Release Year:</label>
+                <input type="number" id="releaseYear" name="releaseYear" required>
+
+                <label for="genre">Genre:</label>
+                <input type="text" id="genre" name="genre" required>
+
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea>
+
+                <label for="songs">Songs (comma-separated):</label>
+                <textarea id="songs" name="songs" required></textarea>
+
+                <button type="submit">Submit</button>
+            </form>
         </div>
-    </div>
-    
-    <div id="edit-animal-container" class="dialog transparent">
-        <span class="close">&times;</span>
+    </main>
 
-        <h3 id="title">Animals</h3>
-        <form id="edit-animal" method="post">
-            <input type="hidden" name="_id" value="-1">
-            <p> 
-                <label for="name">Animal Name: </label>
-                <input type="text" id="name" name="name"required>
-            </p>
-            <p>
-                <label for="color">Color: </label>
-                <input type="text" id="color" name="color" required>
-            </p>
-            <p>
-                <label for="family">Family: </label>
-                <input type="text" id="family" name="family" required>
-            </p>
-            <p>
-                <label for="place">Place: </label>
-                <input type="text" id="place" name="place" required>
-            </p>
-            <p>
-                <label for="growth">Growth: </label>
-                <input type="text" id="growth" name="growth" required>
-            </p>
-            <p>
-                <label for="img">Upload Image: </label>
-                <input type="file" id="img" name="img">
-            </p>
-            <p>
-                <button id="add" type="submit">Add Animal</button>
-            </p>
-        </form>
+    <script src="script.js"></script>
+</body>
 
-        <section id="success-message" class="hidden">
-            <p>Your animal has been added!</p>
-        </section>
-       
-    </div>
 </html>
