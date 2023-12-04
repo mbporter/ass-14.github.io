@@ -6,6 +6,19 @@ app.use(express.static("public"));
 app.use(express.json());
 const cors = require("cors");
 app.use(cors());
+const mongoose = require("mongoose");
+
+
+mongoose
+    .connect("mongodb+srv://Mbporter:Darcy123123@cluster0.sefh4en.mongodb.net/?retryWrites=true&w=majority")
+    .then(() => {
+    console.log("connected to mongodb");
+    })
+    .catch((error) => console.log("couldn't connect to mongodb", error));
+
+    app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+});
 
 const upload = multer({ dest: __dirname + "/public/images" });
 
@@ -120,6 +133,15 @@ app.delete("/api/albums/:id", (req, res) => {
     } else {
         res.status(404).send('Album not found');
     }
+});
+
+
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+
+    // Send the error details to the client
+    res.status(500).send('Something went wrong!');
 });
 
 app.listen(3000, () => {

@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let currentEditingId = null; // Track the id of the album being edited
-
+let albums = [];
 async function loadAlbums() {
     try {
         const response = await fetch('/api/albums');
@@ -53,6 +53,7 @@ async function handleFormSubmit(event) {
         method: currentEditingId ? 'PUT' : 'POST',
         body: formData
     };
+    const url = currentEditingId ? `/api/albums/${currentEditingId}` : '/api/albums';
 
     try {
         const response = await fetch(`/api/albums${currentEditingId ? '/' + currentEditingId : ''}`, fetchOptions);
@@ -60,6 +61,7 @@ async function handleFormSubmit(event) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
+        albums = result;
         displayAlbums(result);
         toggleAlbumForm();
     } catch (error) {
@@ -92,6 +94,7 @@ async function deleteAlbum(albumId) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const result = await response.json();
+            albums = result;
             displayAlbums(result);
         } catch (error) {
             console.error('Error deleting album:', error);
